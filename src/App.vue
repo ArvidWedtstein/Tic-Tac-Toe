@@ -50,6 +50,7 @@ const checkWinner = (): 'X' | 'O' | 'tie' | null => {
 
   for (let line of lines) {
     const [a, b, c] = line
+    console.log(cells.value[a], cells.value[b], cells.value[c])
     if (cells.value[a] && cells.value[a] === cells.value[b] && cells.value[a] === cells.value[c]) {
       gameOver.value = true
       winningCells.value = line
@@ -57,7 +58,7 @@ const checkWinner = (): 'X' | 'O' | 'tie' | null => {
     }
   }
 
-  if (!cells.value.includes('')) {
+  if (!cells.value.includes('') && currentPlayer.value === 'O') {
     gameOver.value = true
     return 'tie'
   }
@@ -75,7 +76,7 @@ const resetGame = () => {
 
 const computerMove = async () => {
   let bestScore = -Infinity
-  let move: number = -1
+  let move = null
 
   for (let i = 0; i < cells.value.length; i++) {
     if (cells.value[i] === '') {
@@ -89,12 +90,17 @@ const computerMove = async () => {
     }
   }
 
-  cells.value[move] = 'O'
-  checkWinner()
-  currentPlayer.value = 'X'
+  if (move !== null) {
+    cells.value[move] = 'O'
+    checkWinner()
+    currentPlayer.value = 'X'
+  }
 }
 
+let i = 0
 const minimax = (board: string[], depth: number, isMaximizing: boolean) => {
+  if (i > 1000) return -1
+  i++
   const scores = {
     X: -1,
     O: 1,
@@ -103,7 +109,7 @@ const minimax = (board: string[], depth: number, isMaximizing: boolean) => {
 
   const result = checkWinner()
   if (result !== null) {
-    return scores[result]
+    return scores[result] * (10 - depth) // Favor faster wins and slower losses
   }
 
   if (isMaximizing) {
